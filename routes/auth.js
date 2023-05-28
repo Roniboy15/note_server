@@ -2,8 +2,21 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { generateToken } = require('../utils/jwt');
+const authMiddleware = require('../middleware/auth.js');
 
 const router = express.Router();
+
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password'); // excluding password
+    if (!user) {
+      throw new Error('User not found');
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 router.post('/register', async (req, res) => {
   try {

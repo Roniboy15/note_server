@@ -1,4 +1,5 @@
 const express = require('express');
+const sanitizeHtml = require('sanitize-html');
 const Note = require('../models/Note.js');
 const authMiddleware = require('../middleware/auth.js');
 const Topic = require('../models/Topic.js');
@@ -38,9 +39,12 @@ router.post('/', authMiddleware, async (req, res) => {
       await topic.save();
     }
 
+    // Sanitize content
+    const sanitizedContent = sanitizeHtml(req.body.content);
+
     const newNote = new Note({
       author: req.body.author || '',
-      content: req.body.content,
+      content: sanitizedContent,
       topic: topic._id, // reference to the topic id
       user: req.user._id,
     });
