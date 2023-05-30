@@ -1,8 +1,10 @@
 const express = require('express');
+const requestPromise = require('request-promise');
 const sanitizeHtml = require('sanitize-html');
 const Note = require('../models/Note.js');
 const authMiddleware = require('../middleware/auth.js');
 const Topic = require('../models/Topic.js');
+const axios = require('axios')
 
 const router = express.Router();
 
@@ -28,10 +30,10 @@ router.post('/', authMiddleware, async (req, res) => {
   try {
     // Check if topic already exists
     let topic = await Topic.findOne({ name: req.body.topic });
-    
+
     // If it doesn't exist, create a new one
     if (!topic) {
-      topic = new Topic({ 
+      topic = new Topic({
         name: req.body.topic,
         user: req.user._id,
         createdAt: new Date()
@@ -54,5 +56,34 @@ router.post('/', authMiddleware, async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 });
+
+router.post('/correct', authMiddleware, async (req, res) => {
+
+  const textToCheck = req.body.content;
+
+  try {
+    const languageToolResponse = await axios({
+      method: 'POST',
+      url: `https://api.textgears.com/correct?&ai=1&language=en-GB&key=${TEXT_GEARS_KEY}`,
+      data: {
+        text: textToCheck,
+
+      },
+      headers: {
+        'Content-Type': 'application/json',
+        'key': 'V8vgiz4nDnHa6VaD'
+      }
+    });
+    res.json(languageToolResponse.data.response.corrected);
+  } catch (error) {
+
+    console.log(error)
+    res.status(500).json({ error: 'Error occurred while checking text.' });
+  }
+}
+
+);
+
+
 
 module.exports = router;
