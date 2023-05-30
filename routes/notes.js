@@ -1,11 +1,10 @@
 const express = require('express');
-const requestPromise = require('request-promise');
 const sanitizeHtml = require('sanitize-html');
 const Note = require('../models/Note.js');
 const authMiddleware = require('../middleware/auth.js');
 const Topic = require('../models/Topic.js');
 const axios = require('axios')
-
+const {config} = require("../config/secret.js")
 const router = express.Router();
 
 router.get('/', authMiddleware, async (req, res) => {
@@ -64,14 +63,14 @@ router.post('/correct', authMiddleware, async (req, res) => {
   try {
     const languageToolResponse = await axios({
       method: 'POST',
-      url: `https://api.textgears.com/correct?&ai=1&language=en-GB&key=${TEXT_GEARS_KEY}`,
+      url: `https://api.textgears.com/correct?&ai=1&language=en-GB&key=${config.textGearKey}`,
       data: {
         text: textToCheck,
 
       },
       headers: {
         'Content-Type': 'application/json',
-        'key': 'V8vgiz4nDnHa6VaD'
+        'key': config.textGearKey
       }
     });
     res.json(languageToolResponse.data.response.corrected);
