@@ -18,12 +18,22 @@ router.get('/', authMiddleware, async (req, res) => {
 
 router.get('/:topic', authMiddleware, async (req, res) => {
   try {
-    const notes = await Note.find({ user: req.user._id, topic: req.params.topic });
+    let conditions = { user: req.user._id, topic: req.params.topic };
+
+    if (req.query.start && req.query.end) {
+      conditions.createdAt = {
+        $gte: new Date(new Date(req.query.start).setHours(00, 00, 00)),
+        $lte: new Date(new Date(req.query.end).setHours(23, 59, 59)),
+      };
+    }
+
+    const notes = await Note.find(conditions);
     res.json(notes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
